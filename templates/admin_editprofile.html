@@ -1,20 +1,24 @@
 {% extends 'base.html' %}
 
-{% block title %}Vechicle Parking App - Edit Profile{% endblock %}
-
+{% block title %}Edit Admin Profile - Vehicle Parking System{% endblock %}
 
 {% block navbar %}
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-    <div class="container justify-content-center">
-      <a class="navbar-brand font-weight-bold text-white" href="/admin">Welcome to Admin</a>
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="/admin">
+        <i class="fas fa-parking"></i> VPS Admin
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-        <ul class="navbar-nav text-center">
-          <li class="nav-item"><a class="nav-link" href="/admin">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="/admin/admin_users/">Users</a></li>
-          <li class="nav-item"><a class="nav-link" href="/search">Search</a></li>
-          <li class="nav-item"><a class="nav-link" href="/admin/summary">Summary</a></li>
-          <li class="nav-item"><a class="nav-link" href="/admin/admin_editprofile">Edit Profile</a></li>
-          <li class="nav-item"><a class="nav-link" href="/login">Logout</a></li>
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="/admin"><i class="fas fa-home"></i> Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/admin_users"><i class="fas fa-users"></i> Users</a></li>
+          <li class="nav-item"><a class="nav-link" href="/search"><i class="fas fa-search"></i> Search</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/summary"><i class="fas fa-chart-bar"></i> Summary</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/admin_editprofile"><i class="fas fa-user-edit"></i> Profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="/login"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
       </div>
     </div>
@@ -22,26 +26,46 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mt-5 pt-4">
+<div class="container mt-6 pt-5">
   <div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="container-fluid text-center font-weight-bold py-3 shadow mt-5" style="background-color: aquamarine;">
-            <h3 class="mb-0">Edit Profile</h3>
+    <div class="col-lg-6 col-md-8">
+      
+      <!-- Card -->
+      <div class="card mt-4">
+        <div class="card-header bg-primary">
+          <h3 class="mb-0">
+            <i class="fas fa-user-edit"></i> Edit Admin Profile
+          </h3>
         </div>
 
-      <form method="POST">
-        <div class="form-group">
-          <label><strong>Username</strong></label>
-          <input type="text" class="form-control" name="username" value="{{ user.username }}" required>
+        <div class="card-body">
+          <form method="POST">
+            <div class="form-group">
+              <label><i class="fas fa-user"></i> Admin Username</label>
+              <input type="text" class="form-control" name="username" value="{{ user.username }}" required minlength="3" maxlength="20">
+            </div>
+
+            <div class="form-group">
+              <label><i class="fas fa-lock"></i> Password</label>
+              <input type="password" class="form-control" name="password" value="{{ user.password }}" required minlength="3" maxlength="20">
+            </div>
+
+            <div class="alert alert-info mt-3">
+              <i class="fas fa-info-circle"></i> Keep your credentials secure. Do not share your admin password with anyone.
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+              <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
+                <i class="fas fa-save"></i> Save Changes
+              </button>
+              <a href="/admin" class="btn btn-secondary btn-lg flex-grow-1">
+                <i class="fas fa-arrow-left"></i> Cancel
+              </a>
+            </div>
+          </form>
         </div>
-        <div class="form-group">
-          <label><strong>Password</strong></label>
-          <input type="password" class="form-control" name="password" value="{{ user.password }}" required>
-        </div>
-        <div class="text-center mt-4">
-          <button type="submit" class="btn btn-primary">Update Profile</button>
-        </div>
-      </form>
+      </div>
+
     </div>
   </div>
 </div>

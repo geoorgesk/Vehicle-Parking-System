@@ -1,17 +1,24 @@
 {% extends 'base.html' %}
 
+{% block title %}Summary Dashboard - Vehicle Parking System{% endblock %}
+
 {% block navbar %}
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-    <div class="container justify-content-center">
-      <a class="navbar-brand font-weight-bold text-white" href="/admin">Welcome to Admin</a>
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="/admin">
+        <i class="fas fa-parking"></i> VPS Admin
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-        <ul class="navbar-nav text-center">
-          <li class="nav-item"><a class="nav-link" href="/admin">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="/admin/admin_users/">Users</a></li>
-          <li class="nav-item"><a class="nav-link" href="/search">Search</a></li>
-          <li class="nav-item"><a class="nav-link" href="/admin/summary">Summary</a></li>
-          <li class="nav-item"><a class="nav-link" href="/admin/admin_editprofile">Edit Profile</a></li>
-          <li class="nav-item"><a class="nav-link" href="/login">Logout</a></li>
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="/admin"><i class="fas fa-home"></i> Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/admin_users"><i class="fas fa-users"></i> Users</a></li>
+          <li class="nav-item"><a class="nav-link" href="/search"><i class="fas fa-search"></i> Search</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/summary"><i class="fas fa-chart-bar"></i> Summary</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/admin_editprofile"><i class="fas fa-user-edit"></i> Profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="/login"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
       </div>
     </div>
@@ -19,21 +26,95 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid text-center font-weight-bold py-3 shadow mt-5" style="background-color: aquamarine;">
-  <h3 class="mb-0">Summary Dashboard</h3>
-</div>
-<div class="row">
-    <div class="col-md-6">
-        <canvas id="revenueChart"></canvas>
+<div class="container mt-6 pt-5">
+  
+  <!-- Page Header -->
+  <div class="mb-5 mt-3">
+    <h2 class="mb-2"><i class="fas fa-chart-line"></i> Analytics & Summary</h2>
+    <p class="text-muted">Real-time insights into parking operations and revenue</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid mb-5">
+    <div class="stat-card success">
+      <h3>Available Spots</h3>
+      <div class="stat-value">{{ total_available }}</div>
     </div>
-    <div class="col-md-6">
-        <canvas id="occupancyChart"></canvas>
+    <div class="stat-card danger">
+      <h3>Occupied Spots</h3>
+      <div class="stat-value">{{ total_occupied }}</div>
     </div>
+    <div class="stat-card">
+      <h3>Total Capacity</h3>
+      <div class="stat-value">{{ total_available + total_occupied }}</div>
+    </div>
+    <div class="stat-card warning">
+      <h3>Occupancy Rate</h3>
+      <div class="stat-value">
+        {% if total_available + total_occupied > 0 %}
+          {{ ((total_occupied / (total_available + total_occupied)) * 100) | int }}%
+        {% else %}
+          0%
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="row">
+    <div class="col-lg-6 mb-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-chart-doughnut"></i> Revenue by Lot</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="revenueChart" height="70"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Occupancy Status</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="occupancyChart" height="70"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Stats -->
+  <div class="card mt-4">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="fas fa-list"></i> Revenue by Parking Lot</h5>
+    </div>
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Parking Lot</th>
+            <th class="text-right">Revenue (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in range(lot_names|length) %}
+            <tr>
+              <td>{{ lot_names[i] }}</td>
+              <td class="text-right"><strong>₹ {{ revenues[i] | int }}</strong></td>
+            </tr>
+          {% endfor %}
+          <tr style="border-top: 2px solid #e2e8f0;">
+            <td><strong>Total Revenue</strong></td>
+            <td class="text-right"><strong style="font-size: 1.1rem; color: var(--success);">₹ {{ revenues | sum | int }}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
-
-
-
-
 
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -43,27 +124,75 @@
     const revenues = {{ revenues | tojson }};
     const occupancy = {{ [total_available, total_occupied] | tojson }};
 
-    // Revenue Chart
+    // Revenue Chart (Doughnut)
     new Chart(document.getElementById('revenueChart'), {
         type: 'doughnut',
         data: {
             labels: lotNames,
             datasets: [{
                 data: revenues,
-                backgroundColor: ['#4caf50', '#2196f3', '#ff9800', '#9c27b0', '#f44336']
+                backgroundColor: [
+                    '#2563eb',
+                    '#10b981',
+                    '#f59e0b',
+                    '#ef4444',
+                    '#8b5cf6',
+                    '#06b6d4'
+                ],
+                borderColor: 'white',
+                borderWidth: 2
             }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: { size: 12 }
+                    }
+                }
+            }
         }
     });
 
-    // Occupancy Chart
+    // Occupancy Chart (Bar)
     new Chart(document.getElementById('occupancyChart'), {
         type: 'bar',
         data: {
             labels: ['Available', 'Occupied'],
             datasets: [{
+                label: 'Spots',
                 data: occupancy,
-                backgroundColor: ['#4caf50', '#f44336']
+                backgroundColor: ['#10b981', '#ef4444'],
+                borderRadius: 5,
+                borderSkipped: false
             }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.05)'
+                    }
+                },
+                y: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
         }
     });
 </script>

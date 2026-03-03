@@ -3,7 +3,7 @@ from datetime import datetime
 from models.database import db, User, Admin, ParkingLot, ParkingSpot, Reservation
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////mnt/c/Users/23f10/MAD1_PROJECT/parking.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///parking.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'garvit123'
 
@@ -261,7 +261,7 @@ def admin_edit_profile():
         db.session.commit()
         session['username'] = user.username
         flash("Profile updated successfully!", "success")
-        return redirect(url_for('user_page'))
+        return redirect(url_for('admin_page'))
     return render_template('admin_editprofile.html', user=user)
 
 @app.route('/admin/add_lot', methods=['GET', 'POST'])
@@ -305,7 +305,7 @@ def admin_user_details(user_id):
     return render_template('admin_user_details.html', user=user, reservations=reservations)
 
 
-@app.route('/admin/admin_users/')
+@app.route('/admin/admin_users')
 def admin_users():
     users = User.query.all()  # Get all users
     return render_template('admin_users.html', users=users)
@@ -369,12 +369,16 @@ def search():
     lots = []
 
     if filter_by == 'user_id':
-        user = User.query.filter_by(id=query).first()
+        try:
+            user_id = int(query)
+            user = User.query.filter_by(id=user_id).first()
+        except (ValueError, TypeError):
+            user = None
         if user:
             reservations = Reservation.query.filter_by(user_id=user.id).all()
             lot_ids = list(set([ParkingSpot.query.get(res.spot_id).lot_id for res in reservations]))
             lots = ParkingLot.query.filter(ParkingLot.id.in_(lot_ids)).all()
-    elif filter_by == 'location':
+    if filter_by == 'location':
         lots = ParkingLot.query.filter(ParkingLot.prime_location_name.ilike(f'%{query}%')).all()
 
     for lot in lots:
