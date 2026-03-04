@@ -8,7 +8,8 @@ This system supports both **User** and **Admin** functionalities including parki
 
 ## 👨‍💻 Author
 
-**George S Kakkassery**  
+**George S Kakkassery**
+**Safitha Siraj**
 B.Tech Computer Science & Cyber Security  
 Muthoot Institute of Technology & Science (MITS)
 
