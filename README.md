@@ -1,4 +1,4 @@
-# 🚗 MITS Vehicle Parking Management System
+# 🚗 Vehicle Parking Management System
 
 A full-stack web application developed to efficiently manage vehicle parking operations using **Flask, SQLite, Bootstrap, and Jinja2**.
 
@@ -8,7 +8,8 @@ This system supports both **User** and **Admin** functionalities including parki
 
 ## 👨‍💻 Author
 
-**George S Kakkassery**  
+**George S Kakkassery**
+**Safitha Siraj**
 B.Tech Computer Science & Cyber Security  
 Muthoot Institute of Technology & Science (MITS)
 
