@@ -120,6 +120,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
+    Chart.defaults.color = '#8892a8';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+
     const lotNames = {{ lot_names | tojson }};
     const revenues = {{ revenues | tojson }};
     const occupancy = {{ [total_available, total_occupied] | tojson }};
@@ -132,15 +135,17 @@
             datasets: [{
                 data: revenues,
                 backgroundColor: [
-                    '#2563eb',
-                    '#10b981',
-                    '#f59e0b',
-                    '#ef4444',
-                    '#8b5cf6',
-                    '#06b6d4'
+                    '#00d4ff',
+                    '#00e89d',
+                    '#ffbe0b',
+                    '#ff6b6b',
+                    '#7c5cfc',
+                    '#e040fb'
                 ],
-                borderColor: 'white',
-                borderWidth: 2
+                borderColor: 'rgba(10,10,26,0.8)',
+                borderWidth: 3,
+                hoverBorderColor: '#fff',
+                hoverBorderWidth: 2
             }]
         },
         options: {
@@ -151,7 +156,10 @@
                     position: 'bottom',
                     labels: {
                         padding: 15,
-                        font: { size: 12 }
+                        font: { size: 12, family: 'Inter' },
+                        color: '#8892a8',
+                        usePointStyle: true,
+                        pointStyleWidth: 10
                     }
                 }
             }
@@ -166,8 +174,10 @@
             datasets: [{
                 label: 'Spots',
                 data: occupancy,
-                backgroundColor: ['#10b981', '#ef4444'],
-                borderRadius: 5,
+                backgroundColor: ['rgba(0, 232, 157, 0.6)', 'rgba(255, 107, 107, 0.6)'],
+                borderColor: ['#00e89d', '#ff6b6b'],
+                borderWidth: 2,
+                borderRadius: 8,
                 borderSkipped: false
             }]
         },
@@ -176,21 +186,17 @@
             responsive: true,
             maintainAspectRatio: true,
             plugins: {
-                legend: {
-                    display: false
-                }
+                legend: { display: false }
             },
             scales: {
                 x: {
                     beginAtZero: true,
-                    grid: {
-                        color: 'rgba(0,0,0,0.05)'
-                    }
+                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    ticks: { color: '#8892a8', font: { family: 'Inter' } }
                 },
                 y: {
-                    grid: {
-                        display: false
-                    }
+                    grid: { display: false },
+                    ticks: { color: '#8892a8', font: { family: 'Inter', weight: 600 } }
                 }
             }
         }

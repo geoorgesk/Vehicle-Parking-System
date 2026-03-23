@@ -1,19 +1,23 @@
 {% extends 'base.html' %}
-
-{% block title %}Vechicle Parking App - Occupied Spot Details{% endblock %}
+{% block title %}Vehicle Parking System - Occupied Spot Details{% endblock %}
 
 {% block navbar %}
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-    <div class="container justify-content-center">
-      <a class="navbar-brand font-weight-bold text-white" href="/admin">Welcome to Admin</a>
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="/admin">
+        <i class="fas fa-parking"></i> VPS Admin
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-        <ul class="navbar-nav text-center">
-          <li class="nav-item"><a class="nav-link" href="/admin">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="/admin/admin_users/">Users</a></li>
-          <li class="nav-item"><a class="nav-link" href="/search">Search</a></li>
-          <li class="nav-item"><a class="nav-link" href="/admin/summary">Summary</a></li>
-          <li class="nav-item"><a class="nav-link" href="/admin/admin_editprofile">Edit Profile</a></li>
-          <li class="nav-item"><a class="nav-link" href="/login">Logout</a></li>
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="/admin"><i class="fas fa-home"></i> Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/admin_users"><i class="fas fa-users"></i> Users</a></li>
+          <li class="nav-item"><a class="nav-link" href="/search"><i class="fas fa-search"></i> Search</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/summary"><i class="fas fa-chart-bar"></i> Summary</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/admin_editprofile"><i class="fas fa-user-edit"></i> Profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="/login"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
       </div>
     </div>
@@ -21,18 +25,64 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-  <h3 class="text-center mb-4 bg-warning py-2 rounded">Occupied Parking Spot Details</h3>
+<div class="container mt-6 pt-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
 
-  <div class="card shadow p-4">
-    <p><strong>ID:</strong> {{ spot.id }}</p>
-    <p><strong>Customer ID:</strong> {{ reservation.user_id if reservation else 'N/A' }}</p>
-    <p><strong>Vehicle Number:</strong> {{ reservation.vehicle_no if reservation else 'N/A' }}</p>
-    <p><strong>Date/Time of Parking:</strong> {{ reservation.parking_timestamp if reservation else 'N/A' }}</p>
-    <p><strong>Estimated Parking Cost:</strong> ₹{{ reservation.parking_cost if reservation else 'N/A' }}</p>
-    
-    <div class="text-center mt-3">
-      <a href="{{ url_for('lot_details', lot_id=spot.lot_id) }}" class="btn btn-primary">Close</a>
+      <div class="mb-4 mt-3 text-center">
+        <h2 class="mb-2"><i class="fas fa-car"></i> Occupied Spot</h2>
+        <p class="text-muted">Details of the currently occupied parking spot</p>
+      </div>
+
+      <div class="card">
+        <div class="card-header bg-warning">
+          <h5 class="mb-0"><i class="fas fa-exclamation-circle"></i> Spot #{{ spot.id }} — Occupied</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="lot-info mb-3">
+                <label>Spot ID</label>
+                <div class="lot-info-value">#{{ spot.id }}</div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="lot-info mb-3">
+                <label>Customer ID</label>
+                <div class="lot-info-value">{{ reservation.user_id if reservation else 'N/A' }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="lot-info mb-3">
+                <label>Vehicle Number</label>
+                <div class="lot-info-value">{{ reservation.vehicle_no if reservation else 'N/A' }}</div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="lot-info mb-3">
+                <label>Parking Time</label>
+                <div class="lot-info-value" style="font-size: 0.95rem;">{{ reservation.parking_timestamp if reservation else 'N/A' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card mt-3" style="border: 1px solid rgba(255,190,11,0.2); background: rgba(255,190,11,0.05);">
+            <h3><i class="fas fa-money-bill-wave"></i> Estimated Cost</h3>
+            <div class="stat-value" style="background: var(--gradient-warning); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+              ₹{{ reservation.parking_cost if reservation else 'N/A' }}
+            </div>
+          </div>
+
+          <div class="text-center mt-4">
+            <a href="{{ url_for('lot_details', lot_id=spot.lot_id) }}" class="btn btn-primary">
+              <i class="fas fa-arrow-left"></i> Back to Lot
+            </a>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
