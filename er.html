@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vehicle Parking System — ER Diagram</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #0a0a14;
+      color: #e0e0e0;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* ── Subtle dot grid ────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image: radial-gradient(rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+    }
+
+    /* ── Header bar ─────────────────────────────────── */
+    .header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 32px;
+      background: rgba(10,10,20,.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .header-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; color: #fff;
+      box-shadow: 0 2px 12px rgba(99,102,241,.35);
+    }
+    .header h1 {
+      font-size: 17px; font-weight: 700; letter-spacing: -.3px;
+      color: #f1f5f9;
+    }
+    .header h1 span {
+      font-weight: 400; color: #64748b; margin-left: 6px; font-size: 13px;
+    }
+
+    /* ── Legend ──────────────────────────────────────── */
+    .legend {
+      display: flex; gap: 20px; font-size: 11.5px; color: #94a3b8;
+      align-items: center;
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-swatch {
+      width: 14px; height: 14px; border-radius: 4px; display: inline-block;
+      border: 1.5px solid transparent;
+    }
+    .legend-swatch.diamond {
+      width: 11px; height: 11px; transform: rotate(45deg); border-radius: 2px;
+    }
+    .legend-swatch.circle {
+      width: 10px; height: 10px; border-radius: 50%;
+    }
+
+    /* ── SVG canvas ─────────────────────────────────── */
+    #canvas { width: 100vw; height: 100vh; cursor: grab; position: relative; z-index: 1; }
+    #canvas.grabbing { cursor: grabbing; }
+
+    /* ── Tooltips ────────────────────────────────────── */
+    .tooltip {
+      position: fixed; z-index: 200; pointer-events: none;
+      background: rgba(15,15,30,.95); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 8px; padding: 8px 14px;
+      font-size: 12px; color: #cbd5e1;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0,0,0,.5);
+      opacity: 0; transition: opacity .15s;
+      white-space: nowrap;
+    }
+    .tooltip.show { opacity: 1; }
+
+    /* ── Controls ────────────────────────────────────── */
+    .controls {
+      position: fixed; bottom: 22px; right: 22px; z-index: 100;
+      display: flex; gap: 6px;
+    }
+    .controls button {
+      width: 38px; height: 38px; border: 1px solid rgba(255,255,255,.08);
+      border-radius: 10px; background: rgba(15,15,30,.85);
+      color: #94a3b8; font-size: 17px; cursor: pointer;
+      backdrop-filter: blur(12px); transition: all .2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .controls button:hover {
+      background: rgba(99,102,241,.2); color: #c7d2fe;
+      border-color: rgba(99,102,241,.3);
+    }
+
+    /* ── Watermark ───────────────────────────────────── */
+    .watermark {
+      position: fixed; bottom: 22px; left: 28px; z-index: 100;
+      font-size: 11px; color: rgba(100,116,139,.45);
+      letter-spacing: .3px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-icon">⬡</div>
+    <h1>Vehicle Parking System <span>· Entity-Relationship Diagram</span></h1>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><span class="legend-swatch" style="background:#6366f1"></span>Entity</div>
+    <div class="legend-item"><span class="legend-swatch" style="background:rgba(148,163,184,.1);border-color:rgba(148,163,184,.4)"></span>Attribute</div>
+    <div class="legend-item"><span class="legend-swatch circle" style="background:#fbbf24"></span><u style="color:#fbbf24">PK</u></div>
+    <div class="legend-item"><span class="legend-swatch circle" style="background:#38bdf8"></span><i style="color:#38bdf8">FK</i></div>
+    <div class="legend-item"><span class="legend-swatch diamond" style="background:rgba(244,114,182,.2);border-color:#f472b6"></span>Relationship</div>
+    <div class="legend-item" style="color:#64748b">· Scroll to zoom · Drag to pan</div>
+  </div>
+</div>
+
+<svg id="canvas" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Entity shadows -->
+    <filter id="entityShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="rgba(0,0,0,.4)" />
+    </filter>
+    <filter id="entityGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="0" stdDeviation="18" flood-color="rgba(99,102,241,.3)" />
+    </filter>
+    <!-- Gradients for entities -->
+    <linearGradient id="gradUser" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#4f46e5" />
+    </linearGradient>
+    <linearGradient id="gradVehicle" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+    <linearGradient id="gradBooking" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+    <linearGradient id="gradParkingLot" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ef4444" />
+      <stop offset="100%" stop-color="#dc2626" />
+    </linearGradient>
+    <linearGradient id="gradParkingSpot" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6" />
+      <stop offset="100%" stop-color="#7c3aed" />
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="controls">
+  <button id="zoomIn" title="Zoom in">＋</button>
+  <button id="zoomOut" title="Zoom out">−</button>
+  <button id="resetView" title="Fit to screen">⌂</button>
+</div>
+
+<div class="watermark">ER Diagram · Auto-generated</div>
+
+<!-- Tooltip -->
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+/* =================================================================
+   DATA MODEL
+   ================================================================= */
+const ENTITIES = [
+  {
+    id: 'User', label: 'User', x: 100, y: 200, grad: 'url(#gradUser)', color: '#6366f1',
+    attrs: [
+      { name: 'user_id',          key: 'PK' },
+      { name: 'username' },
+      { name: 'password' },
+      { name: 'email' },
+      { name: 'phone' },
+      { name: 'role' },
+      { name: 'registration_date' },
+    ]
+  },
+  {
+    id: 'Vehicle', label: 'Vehicle', x: 100, y: 640, grad: 'url(#gradVehicle)', color: '#10b981',
+    attrs: [
+      { name: 'vehicle_id',   key: 'PK' },
+      { name: 'user_id',      key: 'FK' },
+      { name: 'license_plate' },
+      { name: 'vehicle_type' },
+      { name: 'color' },
+    ]
+  },
+  {
+    id: 'Booking', label: 'Booking', x: 560, y: 420, grad: 'url(#gradBooking)', color: '#f59e0b',
+    attrs: [
+      { name: 'booking_id',   key: 'PK' },
+      { name: 'user_id',      key: 'FK' },
+      { name: 'spot_id',      key: 'FK' },
+      { name: 'vehicle_id',   key: 'FK' },
+      { name: 'booking_time' },
+      { name: 'release_time' },
+      { name: 'status' },
+    ]
+  },
+  {
+    id: 'ParkingLot', label: 'ParkingLot', x: 1060, y: 180, grad: 'url(#gradParkingLot)', color: '#ef4444',
+    attrs: [
+      { name: 'lot_id',          key: 'PK' },
+      { name: 'lot_name' },
+      { name: 'location' },
+      { name: 'total_spots' },
+      { name: 'available_spots' },
+      { name: 'admin_id',        key: 'FK' },
+    ]
+  },
+  {
+    id: 'ParkingSpot', label: 'ParkingSpot', x: 1060, y: 620, grad: 'url(#gradParkingSpot)', color: '#8b5cf6',
+    attrs: [
+      { name: 'spot_id',     key: 'PK' },
+      { name: 'lot_id',      key: 'FK' },
+      { name: 'spot_number' },
+      { name: 'status' },
+      { name: 'type' },
+    ]
+  },
+];
+
+const RELATIONSHIPS = [
+  { from: 'User',       to: 'Vehicle',     label: 'Owns',     cardFrom: '1', cardTo: 'N',  desc: 'A User can own many Vehicles' },
+  { from: 'User',       to: 'Booking',     label: 'Makes',    cardFrom: '1', cardTo: 'N',  desc: 'A User can make many Bookings' },
+  { from: 'ParkingLot', to: 'ParkingSpot', label: 'Contains', cardFrom: '1', cardTo: 'N',  desc: 'A ParkingLot contains many Spots' },
+  { from: 'Booking',    to: 'ParkingSpot', label: 'Reserves', cardFrom: 'N', cardTo: '1',  desc: 'Many Bookings can reserve one Spot' },
+  { from: 'Booking',    to: 'Vehicle',     label: 'For',      cardFrom: 'N', cardTo: '1',  desc: 'Many Bookings can be for one Vehicle' },
+  { from: 'User',       to: 'ParkingLot',  label: 'Manages',  cardFrom: '1', cardTo: 'N',  desc: 'Admin User manages many ParkingLots' },
+];
+
+/* =================================================================
+   CONSTANTS
+   ================================================================= */
+const ENT_W  = 180, ENT_H = 52, ENT_R = 12;
+const ATTR_RX = 58, ATTR_RY = 17;
+const DIAMOND = 26;
+
+const svg     = document.getElementById('canvas');
+const tooltip = document.getElementById('tooltip');
+const NS      = 'http://www.w3.org/2000/svg';
+
+/* =================================================================
+   SVG HELPERS
+   ================================================================= */
+function el(tag, attrs = {}, parent = svg) {
+  const e = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  parent.appendChild(e);
+  return e;
+}
+function txt(tag, attrs, text, parent) {
+  const e = el(tag, attrs, parent);
+  e.textContent = text;
+  return e;
+}
+function centre(ent) { return { x: ent.x + ENT_W / 2, y: ent.y + ENT_H / 2 }; }
+
+/* =================================================================
+   MAIN DRAWING GROUP
+   ================================================================= */
+const world = el('g', { id: 'world' });
+const entityMap = {};
+ENTITIES.forEach(e => entityMap[e.id] = e);
+
+/* =================================================================
+   DRAW RELATIONSHIP LINES (behind everything)
+   ================================================================= */
+const relGroup = el('g', { id: 'relationships' }, world);
+
+RELATIONSHIPS.forEach(rel => {
+  const a = centre(entityMap[rel.from]);
+  const b = centre(entityMap[rel.to]);
+  const mx = (a.x + b.x) / 2;
+  const my = (a.y + b.y) / 2;
+
+  const g = el('g', {}, relGroup);
+
+  /* curved connector lines */
+  const cmx1 = (a.x + mx) / 2, cmy1 = (a.y + my) / 2;
+  const cmx2 = (mx + b.x) / 2, cmy2 = (my + b.y) / 2;
+
+  el('path', {
+    d: `M${a.x},${a.y} Q${cmx1},${a.y} ${mx},${my}`,
+    fill: 'none', stroke: '#f472b6', 'stroke-width': 1.6, opacity: .35,
+    'stroke-dasharray': 'none',
+  }, g);
+  el('path', {
+    d: `M${mx},${my} Q${cmx2},${b.y} ${b.x},${b.y}`,
+    fill: 'none', stroke: '#f472b6', 'stroke-width': 1.6, opacity: .35,
+  }, g);
+
+  /* diamond */
+  const d = DIAMOND;
+  const pts = `${mx},${my - d} ${mx + d},${my} ${mx},${my + d} ${mx - d},${my}`;
+  const diamond = el('polygon', {
+    points: pts,
+    fill: 'rgba(244,114,182,.08)',
+    stroke: '#f472b6', 'stroke-width': 1.6,
+    style: 'cursor:pointer',
+  }, g);
+
+  /* diamond label */
+  txt('text', {
+    x: mx, y: my,
+    'text-anchor': 'middle', 'dominant-baseline': 'central',
+    'font-family': "'Inter',sans-serif", 'font-size': '10.5',
+    'font-weight': '600', fill: '#f9a8d4',
+    style: 'pointer-events:none',
+  }, rel.label, g);
+
+  /* cardinality badges */
+  const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+  const dx = (b.x - a.x) / len, dy = (b.y - a.y) / len;
+  const perpX = -dy, perpY = dx;
+
+  const badgeOff = 50;
+
+  /* from-side cardinality */
+  drawCardBadge(a.x + dx * badgeOff + perpX * 16, a.y + dy * badgeOff + perpY * 16, rel.cardFrom, g);
+  /* to-side cardinality */
+  drawCardBadge(b.x - dx * badgeOff + perpX * 16, b.y - dy * badgeOff + perpY * 16, rel.cardTo, g);
+
+  /* tooltip on diamond */
+  diamond.addEventListener('mouseenter', e => showTooltip(e, rel.desc));
+  diamond.addEventListener('mouseleave', hideTooltip);
+});
+
+function drawCardBadge(cx, cy, label, parent) {
+  el('rect', {
+    x: cx - 12, y: cy - 10, width: 24, height: 20,
+    rx: 6, ry: 6,
+    fill: 'rgba(251,191,36,.1)', stroke: 'rgba(251,191,36,.4)', 'stroke-width': 1.2,
+  }, parent);
+  txt('text', {
+    x: cx, y: cy,
+    'text-anchor': 'middle', 'dominant-baseline': 'central',
+    'font-family': "'Inter',sans-serif", 'font-size': '11',
+    'font-weight': '700', fill: '#fbbf24',
+    style: 'pointer-events:none',
+  }, label, parent);
+}
+
+/* =================================================================
+   DRAW ENTITIES + ATTRIBUTES
+   ================================================================= */
+const entGroup = el('g', { id: 'entities' }, world);
+
+ENTITIES.forEach(ent => {
+  const g = el('g', { class: 'ent-g', 'data-ent': ent.id }, entGroup);
+  const cx = ent.x + ENT_W / 2;
+  const cy = ent.y + ENT_H / 2;
+
+  /* ── Attributes ─────────────────────────────── */
+  const n = ent.attrs.length;
+  const spread = Math.PI * 0.85;          // arc span
+  const baseAngle = -Math.PI / 2;         // top-centre
+  const startA = baseAngle - spread / 2;
+  const stepA = n > 1 ? spread / (n - 1) : 0;
+  const rX = 190, rY = 115;              // elliptical orbit radii
+
+  ent.attrs.forEach((attr, i) => {
+    const angle = startA + stepA * i;
+    const ax = cx + rX * Math.cos(angle);
+    const ay = cy + rY * Math.sin(angle);
+
+    /* connector line */
+    el('line', {
+      x1: cx, y1: cy, x2: ax, y2: ay,
+      stroke: ent.color, 'stroke-width': 1, opacity: .22,
+    }, g);
+
+    /* oval fill & stroke */
+    let fill, stroke, sw = 1.3;
+    if (attr.key === 'PK') {
+      fill = 'rgba(251,191,36,.08)'; stroke = 'rgba(251,191,36,.55)';
+    } else if (attr.key === 'FK') {
+      fill = 'rgba(56,189,248,.06)'; stroke = 'rgba(56,189,248,.45)';
+    } else {
+      fill = 'rgba(148,163,184,.04)'; stroke = `${ent.color}44`;
+    }
+
+    el('ellipse', {
+      cx: ax, cy: ay, rx: ATTR_RX, ry: ATTR_RY,
+      fill, stroke, 'stroke-width': sw,
+    }, g);
+
+    /* label */
+    let labelText = attr.name;
+    let fontSize = 10;
+    let fontWeight = '400';
+    let textDecoration = 'none';
+    let fontStyle = 'normal';
+    let fillColor = '#cbd5e1';
+
+    if (attr.key === 'PK') {
+      textDecoration = 'underline';
+      fontWeight = '600';
+      fillColor = '#fbbf24';
+    } else if (attr.key === 'FK') {
+      fontStyle = 'italic';
+      fillColor = '#38bdf8';
+    }
+
+    const t = txt('text', {
+      x: ax, y: ay - 1,
+      'text-anchor': 'middle', 'dominant-baseline': 'central',
+      'font-family': "'Inter',sans-serif", 'font-size': fontSize,
+      'font-weight': fontWeight, fill: fillColor,
+      'font-style': fontStyle, 'text-decoration': textDecoration,
+      style: 'pointer-events:none',
+    }, labelText, g);
+
+    /* tiny key badge below name */
+    if (attr.key) {
+      txt('text', {
+        x: ax, y: ay + 12,
+        'text-anchor': 'middle', 'dominant-baseline': 'central',
+        'font-family': "'Inter',sans-serif", 'font-size': '8',
+        'font-weight': '600', fill: attr.key === 'PK' ? '#fbbf2488' : '#38bdf888',
+        style: 'pointer-events:none',
+      }, attr.key, g);
+    }
+  });
+
+  /* ── Entity box ─────────────────────────────── */
+  /* glow behind */
+  el('rect', {
+    x: ent.x - 3, y: ent.y - 3, width: ENT_W + 6, height: ENT_H + 6,
+    rx: ENT_R + 2, ry: ENT_R + 2,
+    fill: 'none', stroke: ent.color, 'stroke-width': 1, opacity: .15,
+    filter: 'url(#entityGlow)',
+  }, g);
+
+  /* main rect */
+  el('rect', {
+    x: ent.x, y: ent.y, width: ENT_W, height: ENT_H,
+    rx: ENT_R, ry: ENT_R,
+    fill: ent.grad, stroke: 'rgba(255,255,255,.12)', 'stroke-width': 1,
+    filter: 'url(#entityShadow)',
+    style: 'cursor:pointer',
+  }, g);
+
+  /* icon indicator (small dot) */
+  el('circle', {
+    cx: ent.x + 18, cy: ent.y + ENT_H / 2,
+    r: 4, fill: 'rgba(255,255,255,.35)',
+  }, g);
+
+  /* entity label */
+  txt('text', {
+    x: ent.x + ENT_W / 2 + 6, y: ent.y + ENT_H / 2,
+    'text-anchor': 'middle', 'dominant-baseline': 'central',
+    'font-family': "'Inter',sans-serif", 'font-size': '15',
+    'font-weight': '700', fill: '#fff', 'letter-spacing': '-.2',
+    style: 'pointer-events:none; text-shadow: 0 1px 4px rgba(0,0,0,.3)',
+  }, ent.label, g);
+
+  /* hover effect */
+  g.addEventListener('mouseenter', () => {
+    g.querySelectorAll('line').forEach(l => l.setAttribute('opacity', '.45'));
+  });
+  g.addEventListener('mouseleave', () => {
+    g.querySelectorAll('line').forEach(l => l.setAttribute('opacity', '.22'));
+  });
+});
+
+/* =================================================================
+   TOOLTIP
+   ================================================================= */
+function showTooltip(e, text) {
+  tooltip.textContent = text;
+  tooltip.style.left = e.clientX + 14 + 'px';
+  tooltip.style.top  = e.clientY + 14 + 'px';
+  tooltip.classList.add('show');
+}
+function hideTooltip() { tooltip.classList.remove('show'); }
+
+/* =================================================================
+   PAN & ZOOM
+   ================================================================= */
+let scale = 1, tx = 0, ty = 0;
+let panning = false, px, py;
+
+function applyTx() {
+  world.setAttribute('transform', `translate(${tx},${ty}) scale(${scale})`);
+}
+
+function resetView() {
+  const bb = world.getBBox();
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const pad = 100;
+  scale = Math.min(vw / (bb.width + pad), vh / (bb.height + pad), 1.1);
+  tx = (vw - bb.width * scale) / 2 - bb.x * scale;
+  ty = (vh - bb.height * scale) / 2 - bb.y * scale + 18;
+  applyTx();
+}
+resetView();
+
+svg.addEventListener('pointerdown', e => {
+  panning = true; px = e.clientX - tx; py = e.clientY - ty;
+  svg.classList.add('grabbing');
+  svg.setPointerCapture(e.pointerId);
+});
+svg.addEventListener('pointermove', e => {
+  if (!panning) return;
+  tx = e.clientX - px; ty = e.clientY - py;
+  applyTx();
+});
+svg.addEventListener('pointerup', e => {
+  panning = false; svg.classList.remove('grabbing');
+  svg.releasePointerCapture(e.pointerId);
+});
+
+svg.addEventListener('wheel', e => {
+  e.preventDefault();
+  const f = e.deltaY < 0 ? 1.1 : 1 / 1.1;
+  const r = svg.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  tx = mx - (mx - tx) * f;
+  ty = my - (my - ty) * f;
+  scale *= f;
+  applyTx();
+}, { passive: false });
+
+document.getElementById('zoomIn').onclick  = () => { scale *= 1.2; applyTx(); };
+document.getElementById('zoomOut').onclick = () => { scale /= 1.2; applyTx(); };
+document.getElementById('resetView').onclick = resetView;
+window.addEventListener('resize', resetView);
+</script>
+</body>
+</html>
